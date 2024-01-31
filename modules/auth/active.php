@@ -4,7 +4,7 @@ if (!defined('_CODE')) {
     die('Access denied...');
 }
 
-layouts('header');
+layouts('header-login');
 
 $token = filter()['token'];
 if(!empty($token)) { 
@@ -39,6 +39,6 @@ else {
 
 <?php
 
-layouts('footer');
+layouts('footer-login');
 
 ?>

@@ -8,7 +8,7 @@ $title = [
     'pageTitle' => 'Register',
 ];
 
-layouts('header', $title);
+layouts('header-login', $title);
 
 $token = filter()['token'];
 if (!empty($token)) {
@@ -110,5 +110,5 @@ if (!empty($token)) {
 ?>
 
 <?php
-layouts('footer');
+layouts('footer-login');
 ?>

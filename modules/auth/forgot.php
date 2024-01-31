@@ -8,7 +8,7 @@ $data = [
     'pageTitle' => 'Forgot Password',
 ];
 
-layouts('header', $data);
+layouts('header-login', $data);
 
 if(isLogin()) {
     redirect('?module=home&action=dashboard');
@@ -95,5 +95,5 @@ $msg_type = getFlashData('msg_type');
 </body>
 
 <?php
-    layouts('footer');
+    layouts('footer-login');
 ?>
