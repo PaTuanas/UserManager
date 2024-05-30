@@ -20,7 +20,7 @@ if (!$loginStatus['isAdmin']) {
     redirect('?module=home&action=dashboard');
 }
 
-$listUsers = getAll("SELECT * FROM users");
+$listTasks = getAll("SELECT tasks.*, users.fullname AS username FROM tasks LEFT JOIN users ON tasks.userid = users.id ");
 
 $msg = getFlashData('msg');
 $msg_type = getFlashData('msg_type');
@@ -30,9 +30,9 @@ $msg_type = getFlashData('msg_type');
 
 <div class="container">
     <hr>
-    <h2>User Management</h2>
+    <h2>Task Management</h2>
     <p>
-        <a href="?module=users&action=add" class="btn btn-success btn-sm"><i class="fa-solid fa-plus"></i> Add user</a>
+        <a href="?module=task&action=add" class="btn btn-success btn-sm"><i class="fa-solid fa-plus"></i> Add Task</a>
     </p>
     <?php
     if (!empty($msg)) {
@@ -43,9 +43,9 @@ $msg_type = getFlashData('msg_type');
         <thead>
             <tr>
                 <th>Order</th>
-                <th>Fullname</th>
-                <th>Email</th>
-                <th>Number</th>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Assigned to</th>
                 <th>Status</th>
                 <th width="5%">Edit</th>
                 <th width="5%">Remove</th>
@@ -53,9 +53,9 @@ $msg_type = getFlashData('msg_type');
         </thead>
         <tbody>
             <?php
-            if (!empty($listUsers)):
+            if (!empty($listTasks)):
                 $count = 0;
-                foreach ($listUsers as $user):
+                foreach ($listTasks as $task):
                     $count++;
                     ?>
                     <tr>
@@ -63,19 +63,27 @@ $msg_type = getFlashData('msg_type');
                             <?php echo $count; ?>
                         </td>
                         <td>
-                            <?php echo $user['fullname']; ?>
+                            <?php echo $task['title']; ?>
                         </td>
                         <td>
-                            <?php echo $user['email']; ?>
+                            <?php echo $task['description']; ?>
                         </td>
                         <td>
-                            <?php echo $user['phone']; ?>
+                            <?php echo $task['username']; ?>
                         </td>
                         <td>
-                            <?php echo $user['status'] == 1 ? '<button class="btn btn-success btn-sn"> Activated </button>' : '<button class="btn btn-danger btn-sn"> Not yet activated </button>'; ?>
+                            <?php 
+                            if ($task['status'] == "Done") {
+                                echo '<button class="btn btn-success btn-sn"> Done </button>';
+                            } elseif ($task['status'] == "In Progress") {
+                                echo '<button class="btn btn-warning btn-sn"> In Progress </button>';
+                            } else {
+                                echo '<button class="btn btn-danger btn-sn">' . $task['status'] . '</button>';
+                            }; 
+                            ?>
                         </td>
-                        <td><a href="<?php echo _WEB_HOST; ?>?module=users&action=edit&id=<?php echo $user['id']; ?>" class="btn btn-warning btn-sn"><i class="fa-solid fa-pen-to-square"></i></a></td>
-                        <td><a href="<?php echo _WEB_HOST; ?>?module=users&action=delete&id=<?php echo $user['id']; ?>" onclick="return confirm('Are you sure you want to delete this user?')"
+                        <td><a href="<?php echo _WEB_HOST; ?>?module=task&action=edit&id=<?php echo $task['id']; ?>" class="btn btn-warning btn-sn"><i class="fa-solid fa-pen-to-square"></i></a></td>
+                        <td><a href="<?php echo _WEB_HOST; ?>?module=task&action=delete&id=<?php echo $task['id']; ?>" onclick="return confirm('Are you sure you want to delete this task?')"
                                 class="btn btn-danger btn-sn"><i class="fa-solid fa-trash"></i></a></td>
                     </tr>
                     <?php

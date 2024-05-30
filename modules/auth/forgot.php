@@ -10,8 +10,10 @@ $data = [
 
 layouts('header-login', $data);
 
-if(isLogin()) {
+$loginStatus = isLogin();
+if ($loginStatus['isLoggedIn']) {
     redirect('?module=home&action=dashboard');
+    exit;
 }
 
 if (isPost()) {

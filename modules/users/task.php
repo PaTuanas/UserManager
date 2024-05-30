@@ -30,7 +30,7 @@ $msg_type = getFlashData('msg_type');
 
 <div class="container">
     <hr>
-    <h2>User Management</h2>
+    <h2>Task Management</h2>
     <p>
         <a href="?module=users&action=add" class="btn btn-success btn-sm"><i class="fa-solid fa-plus"></i> Add user</a>
     </p>

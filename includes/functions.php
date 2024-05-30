@@ -170,18 +170,26 @@ function old_data($key, $oldData, $default = null) {
 }
 
 // Check state login 
-function isLogin () {
+function isLogin() {
     $checkLogin = false;
-    if(getSession('loginToken')){
+    $isAdmin = false; 
+
+    if (getSession('loginToken')) {
         $tokenLogin = getSession('loginToken');
         
         $queryToken = getRow("SELECT user_id FROM tokenlogin WHERE token = '$tokenLogin'");
         if (!empty($queryToken)) {
+            $userId = $queryToken['user_id'];
             $checkLogin = true;
-        }
-        else {
+            
+            $queryUser = getRow("SELECT admin FROM users WHERE id = '$userId'");
+            if (!empty($queryUser) && $queryUser['admin'] === 1) {
+                $isAdmin = true;
+            }
+        } else {
             removeSession('loginToken');
         }
     }
-    return $checkLogin;
+    return ['isLoggedIn' => $checkLogin, 'isAdmin' => $isAdmin];
 }
+

@@ -4,7 +4,7 @@ const _MODULE='home';
 const _ACTION='dashboard';
 const _CODE= true;
 
-define('_WEB_HOST', 'http://'. $_SERVER['HTTP_HOST'] . '/WEB/DemoPHP');
+define('_WEB_HOST', 'http://'. $_SERVER['HTTP_HOST'] . '/WEB/UserManager');
 define('_WEB_HOST_TEMPLATES', _WEB_HOST. '/templates');
 
 define('_WEB_PATH', __DIR__);
