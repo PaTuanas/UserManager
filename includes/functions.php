@@ -14,52 +14,58 @@ function layouts($layoutName='header', $data=[]) {
     }
 }
 
-//Send email function
-function sendMail($to, $subject, $content) {
+function sendMail($to, $subject, $content, $attachments = []) {
     //Create an instance; passing `true` enables exceptions
-$mail = new PHPMailer(true);
+    $mail = new PHPMailer(true);
 
-try {
-    //Server settings
-    $mail->SMTPDebug = SMTP::DEBUG_OFF;                      //Enable verbose debug output
-    $mail->isSMTP();                                            //Send using SMTP
-    $mail->Host       = 'smtp.gmail.com';                     //Set the SMTP server to send through
-    $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
-    $mail->Username   = 'phanhtuan05@gmail.com';                     //SMTP username
-    $mail->Password   = 'uoywgeopcqngucju';                               //SMTP password
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;            //Enable implicit TLS encryption
-    $mail->Port       = 465;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+    try {
+        //Server settings
+        $mail->SMTPDebug = SMTP::DEBUG_OFF;                      //Enable verbose debug output
+        $mail->isSMTP();                                            //Send using SMTP
+        $mail->Host       = 'smtp.gmail.com';                     //Set the SMTP server to send through
+        $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
+        $mail->Username   = 'phanhtuan05@gmail.com';                     //SMTP username
+        $mail->Password   = 'uoywgeopcqngucju';                               //SMTP password
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;            //Enable implicit TLS encryption
+        $mail->Port       = 465;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
 
-    //Recipients
-    $mail->setFrom('phanhtuan05@gmail.com', 'Admin');
-    $mail->addAddress($to);     //Add a recipient
-    
+        //Recipients
+        $mail->setFrom('phanhtuan05@gmail.com', 'Admin');
+        $mail->addAddress($to);     //Add a recipient
 
-    //Content
-    $mail -> CharSet = 'UTF-8';
-    $mail->isHTML(true);                                  //Set email format to HTML
-    $mail->Subject = $subject;
-    $mail->Body    = $content;
+        //Content
+        $mail->CharSet = 'UTF-8';
+        $mail->isHTML(true);                                  //Set email format to HTML
+        $mail->Subject = $subject;
+        $mail->Body    = $content;
 
-    $mail -> SMTPOptions = array(
-        'ssl' => array(
-            'verify_peer' => false,
-            'verify_peer_name' => false,
-            'allow_self_signed' => true,
-        )
-    );
+        // Attach files if provided
+        foreach ($attachments as $attachment) {
+            if (file_exists($attachment)) {
+                $mail->addAttachment($attachment);
+            }
+        }
 
-    $sendMail = $mail->send();
-    // echo 'Message has been sent';
+        $mail->SMTPOptions = array(
+            'ssl' => array(
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true,
+            )
+        );
 
-    if($sendMail) {
-        return $sendMail;
+        $sendMail = $mail->send();
+        // echo 'Message has been sent';
+
+        if ($sendMail) {
+            return $sendMail;
+        }
+
+    } catch (Exception $e) {
+        error_log("Message could not be sent. Mailer Error: {$mail->ErrorInfo}");
     }
+}
 
-} catch (Exception $e) {
-    error_log("Message could not be sent. Mailer Error: {$mail->ErrorInfo}");
-}
-}
 
 //Check Get method
 function isGet() {

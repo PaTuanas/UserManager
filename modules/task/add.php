@@ -29,6 +29,34 @@ if (isPost()) {
     if (empty($filterAll['userid'])) {
         $errors['userid']['required'] = 'Assigned to required';
     }
+    
+    $attachments = [];
+
+    //Upload image
+    if (!empty($_FILES['image']['name'])) {
+        $targetDir = "uploads/images/";
+        $imageFileType = strtolower(pathinfo($_FILES["image"]["name"], PATHINFO_EXTENSION));
+        $targetFile = $targetDir . uniqid() . '.' . $imageFileType;
+        if (!move_uploaded_file($_FILES["image"]["tmp_name"], $targetFile)) {
+            $errors['image']['upload'] = 'Image upload failed. Error: ' . $_FILES['image']['error'];
+        } else {
+            $filterAll['image'] = $targetFile;
+            $attachments[] = $targetFile; // Add to attachments
+        }
+    }
+
+    // Upload file
+    if (!empty($_FILES['file']['name'])) {
+        $targetDir = "uploads/files/";
+        $fileFileType = strtolower(pathinfo($_FILES["file"]["name"], PATHINFO_EXTENSION));
+        $targetFile = $targetDir . uniqid() . '.' . $fileFileType;
+        if (move_uploaded_file($_FILES["file"]["tmp_name"], $targetFile)) {
+            $filterAll['file'] = $targetFile;
+            $attachments[] = $targetFile; // Add to attachments
+        } else {
+            $errors['file']['upload'] = 'File upload failed. Error: ' . $_FILES['file']['error'];
+        }
+    }
 
     if (empty($errors)) {
         $dataInsert = [
@@ -37,9 +65,22 @@ if (isPost()) {
             'userid' => $filterAll['userid'],
             'status' => $filterAll['status'],
             'created_at' => date('Y-m-d H:i:s'),
+            'file' => !empty($filterAll['file']) ? $filterAll['file'] : null,
+            'image' => !empty($filterAll['image']) ? $filterAll['image'] : null
         ];
+
         $insertStatus = insert('tasks', $dataInsert);
         if ($insertStatus) {
+            // Gửi email thông báo
+            $userDetail = getRow("SELECT email FROM users WHERE id = '{$filterAll['userid']}'");
+            if ($userDetail) {
+                $subject = 'New Task Assigned';
+                $content = 'You have been assigned a new task: ' . $filterAll['title'] . '<br>Description: ' . $filterAll['description'];
+                
+                // Gọi hàm sendMail với tệp đính kèm
+                sendMail($userDetail['email'], $subject, $content, $attachments);
+            }
+
             setFlashData('msg', 'Add task successfully!');
             setFlashData('msg_type', 'success');
             redirect('?module=task&action=list');
@@ -53,7 +94,7 @@ if (isPost()) {
         setFlashData('msg_type', 'danger');
         setFlashData('errors', $errors);
         setFlashData('old_data', $filterAll);
-        redirect('?module=task&action=list');
+        redirect('?module=task&action=add');
     }
 }
 
@@ -77,7 +118,7 @@ $users = getAll("SELECT * FROM users");
             getMsg($msg, $msg_type);
         }
         ?>
-        <form action="" method="post">
+        <form action="" method="post" enctype="multipart/form-data">
             <div class="row">
                 <div class="col">
                     <div class="form-group mg-form">
@@ -118,6 +159,20 @@ $users = getAll("SELECT * FROM users");
                             <option value="In Progress" <?php echo (old_data('status', $old) == 'In Progress' ? 'selected' : false);?>>In Progress</option>
                             <option value="Done" <?php echo (old_data('status', $old) == 'Done' ? 'selected' : false);?>>Done</option>
                         </select>
+                    </div>
+                    <div class="form-group mg-form">
+                        <label for="">Image</label>
+                        <input name="image" type="file" class="form-control">
+                        <?php
+                        echo form_error('image', $errors, '<span class="error">', '</span>');
+                        ?>
+                    </div>
+                    <div class="form-group mg-form">
+                        <label for="">File</label>
+                        <input name="file" type="file" class="form-control">
+                        <?php
+                        echo form_error('file', $errors, '<span class="error">', '</span>');
+                        ?>
                     </div>
                 </div>
             </div>

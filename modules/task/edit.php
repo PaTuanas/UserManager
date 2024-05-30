@@ -46,18 +46,64 @@ if (isPost()) {
         $errors['userid']['required'] = 'Assigned to required';
     }
 
+    $attachments = [];
+    $dataUpdate = [
+        'title' => $filterAll['title'],
+        'description' => $filterAll['description'],
+        'userid' => $filterAll['userid'],
+        'status' => $filterAll['status'],
+        'updated_at' => date('Y-m-d H:i:s'),
+    ];
+
+    // Upload new image
+    if (!empty($_FILES['image']['name'])) {
+        $targetDir = "uploads/images/";
+        $imageFileType = strtolower(pathinfo($_FILES["image"]["name"], PATHINFO_EXTENSION));
+        $targetFile = $targetDir . uniqid() . '.' . $imageFileType;
+        if (move_uploaded_file($_FILES["image"]["tmp_name"], $targetFile)) {
+            // Xóa ảnh cũ
+            if (!empty($taskDetail['image']) && file_exists($taskDetail['image'])) {
+                unlink($taskDetail['image']);
+            }
+            $dataUpdate['image'] = $targetFile;
+            $attachments[] = $targetFile; // Add to attachments
+        } else {
+            $errors['image']['upload'] = 'Image upload failed. Error: ' . $_FILES['image']['error'];
+        }
+    }
+
+    // Upload new file
+    if (!empty($_FILES['file']['name'])) {
+        $targetDir = "uploads/files/";
+        $fileFileType = strtolower(pathinfo($_FILES["file"]["name"], PATHINFO_EXTENSION));
+        $targetFile = $targetDir . uniqid() . '.' . $fileFileType;
+        if (move_uploaded_file($_FILES["file"]["tmp_name"], $targetFile)) {
+            // Xóa tệp cũ
+            if (!empty($taskDetail['file']) && file_exists($taskDetail['file'])) {
+                unlink($taskDetail['file']);
+            }
+            $dataUpdate['file'] = $targetFile;
+            $attachments[] = $targetFile; // Add to attachments
+        } else {
+            $errors['file']['upload'] = 'File upload failed. Error: ' . $_FILES['file']['error'];
+        }
+    }
+
     if (empty($errors)) {
-        $dataUpdate = [
-            'title' => $filterAll['title'],
-            'description' => $filterAll['description'],
-            'userid' => $filterAll['userid'],
-            'status' => $filterAll['status'],
-            'updated_at' => date('Y-m-d H:i:s'),
-        ];
         $condition = "id = '$taskId'";
         $updateStatus = update('tasks', $dataUpdate, $condition);
         if ($updateStatus) {
-            setFlashData('msg', 'Edit task successfully!');
+            // Gửi email thông báo cập nhật task
+            $userDetail = getRow("SELECT email FROM users WHERE id = '{$filterAll['userid']}'");
+            if ($userDetail) {
+                $subject = 'Task Updated';
+                $content = 'Your task has been updated: ' . $filterAll['title'] . '<br>Description: ' . $filterAll['description'] . '<br>Status: ' . $filterAll['status'];
+                
+                // Gọi hàm sendMail với tệp đính kèm
+                sendMail($userDetail['email'], $subject, $content, $attachments);
+            }
+
+            setFlashData('msg', 'Edit task successfully and email sent!');
             setFlashData('msg_type', 'success');
         } else {
             setFlashData('msg', 'The system is experiencing an error, please try again later!');
@@ -95,7 +141,7 @@ $users = getAll("SELECT * FROM users");
             getMsg($msg, $msg_type);
         }
         ?>
-        <form action="" method="post">
+        <form action="" method="post" enctype="multipart/form-data">
             <div class="row">
                 <div class="col">
                     <div class="form-group mg-form">
@@ -136,6 +182,32 @@ $users = getAll("SELECT * FROM users");
                             <option value="In Progress" <?php echo (old_data('status', $old) == 'In Progress' ? 'selected' : false);?>>In Progress</option>
                             <option value="Done" <?php echo (old_data('status', $old) == 'Done' ? 'selected' : false);?>>Done</option>
                         </select>
+                    </div>
+                    <div class="form-group mg-form">
+                        <label for="">Current Image</label>
+                        <?php if (!empty($old['image'])) { ?>
+                            <div>
+                                <img src="<?php echo $old['image']; ?>" alt="Current Image" style="max-width: 100px;">
+                            </div>
+                        <?php } ?>
+                        <label for="">Replace Image</label>
+                        <input name="image" type="file" class="form-control">
+                        <?php
+                        echo form_error('image', $errors, '<span class="error">', '</span>');
+                        ?>
+                    </div>
+                    <div class="form-group mg-form">
+                        <label for="">Current File</label>
+                        <?php if (!empty($old['file'])) { ?>
+                            <div>
+                                <a href="<?php echo $old['file']; ?>" target="_blank">View Current File</a>
+                            </div>
+                        <?php } ?>
+                        <label for="">Replace File</label>
+                        <input name="file" type="file" class="form-control">
+                        <?php
+                        echo form_error('file', $errors, '<span class="error">', '</span>');
+                        ?>
                     </div>
                 </div>
             </div>
