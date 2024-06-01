@@ -92,7 +92,7 @@ $msg_type = getFlashData('msg_type');
                 ?>
                 <tr>
                     <td colspan="7">
-                        <div class="alert alert-danger text-center">Don't have any users</div>
+                        <div class="alert alert-danger text-center">Don't have any tasks</div>
                     </td>
                 </tr>
                 <?php

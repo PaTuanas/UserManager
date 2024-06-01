@@ -189,7 +189,7 @@ function isLogin() {
             $checkLogin = true;
             
             $queryUser = getRow("SELECT admin FROM users WHERE id = '$userId'");
-            if (!empty($queryUser) && $queryUser['admin'] === 1) {
+            if (!empty($queryUser) && $queryUser['admin'] == "1") {
                 $isAdmin = true;
             }
         } else {
