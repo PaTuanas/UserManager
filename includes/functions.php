@@ -24,8 +24,8 @@ function sendMail($to, $subject, $content, $attachments = []) {
         $mail->isSMTP();                                            //Send using SMTP
         $mail->Host       = 'smtp.gmail.com';                     //Set the SMTP server to send through
         $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
-        $mail->Username   = 'kgiang.tranlee@gmail.com';                     //SMTP username
-        $mail->Password   = 'mutuhiwuyqcwqfot';                              //SMTP password
+        $mail->Username   = 'phanhtuan05@gmail.com';                     //SMTP username
+        $mail->Password   = 'uoywgeopcqngucju';                               //SMTP password
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;            //Enable implicit TLS encryption
         $mail->Port       = 465;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
 
@@ -178,7 +178,8 @@ function old_data($key, $oldData, $default = null) {
 // Check state login 
 function isLogin() {
     $checkLogin = false;
-    $isAdmin = false; 
+    $isAdmin = false;
+    $userId = null;
 
     if (getSession('loginToken')) {
         $tokenLogin = getSession('loginToken');
@@ -189,13 +190,14 @@ function isLogin() {
             $checkLogin = true;
             
             $queryUser = getRow("SELECT admin FROM users WHERE id = '$userId'");
-            if (!empty($queryUser) && $queryUser['admin'] == "1") {
+            if (!empty($queryUser) && $queryUser['admin'] == 1) {
                 $isAdmin = true;
             }
         } else {
             removeSession('loginToken');
         }
     }
-    return ['isLoggedIn' => $checkLogin, 'isAdmin' => $isAdmin];
+    return ['isLoggedIn' => $checkLogin, 'isAdmin' => $isAdmin, 'userId' => $userId];
 }
+
 
