@@ -178,7 +178,8 @@ function old_data($key, $oldData, $default = null) {
 // Check state login 
 function isLogin() {
     $checkLogin = false;
-    $isAdmin = false; 
+    $isAdmin = false;
+    $userId = null;
 
     if (getSession('loginToken')) {
         $tokenLogin = getSession('loginToken');
@@ -189,13 +190,14 @@ function isLogin() {
             $checkLogin = true;
             
             $queryUser = getRow("SELECT admin FROM users WHERE id = '$userId'");
-            if (!empty($queryUser) && $queryUser['admin'] === 1) {
+            if (!empty($queryUser) && $queryUser['admin'] == 1) {
                 $isAdmin = true;
             }
         } else {
             removeSession('loginToken');
         }
     }
-    return ['isLoggedIn' => $checkLogin, 'isAdmin' => $isAdmin];
+    return ['isLoggedIn' => $checkLogin, 'isAdmin' => $isAdmin, 'userId' => $userId];
 }
+
 

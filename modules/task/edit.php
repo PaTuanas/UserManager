@@ -93,17 +93,36 @@ if (isPost()) {
         $condition = "id = '$taskId'";
         $updateStatus = update('tasks', $dataUpdate, $condition);
         if ($updateStatus) {
-            // Gửi email thông báo cập nhật task
-            $userDetail = getRow("SELECT email FROM users WHERE id = '{$filterAll['userid']}'");
+            // Gửi email thông báo cập nhật task cho người dùng
+            $userDetail = getRow("SELECT fullname, email FROM users WHERE id = '{$filterAll['userid']}'");
             if ($userDetail) {
                 $subject = 'Task Updated';
-                $content = 'Your task has been updated: ' . $filterAll['title'] . '<br>Description: ' . $filterAll['description'] . '<br>Status: ' . $filterAll['status'];
+                $content = 'Your task has been updated:<br>'
+                         . 'Title: ' . $filterAll['title'] . '<br>'
+                         . 'Description: ' . $filterAll['description'] . '<br>'
+                         . 'Status: ' . $filterAll['status'] . '<br>'
+                         . 'Assigned to: ' . $userDetail['fullname'] . ' (' . $userDetail['email'] . ')';
                 
                 // Gọi hàm sendMail với tệp đính kèm
                 sendMail($userDetail['email'], $subject, $content, $attachments);
             }
 
-            setFlashData('msg', 'Edit task successfully and email sent!');
+            // Gửi email thông báo cập nhật task cho admin
+            $adminDetail = getRow("SELECT fullname, email FROM users WHERE admin = 1");
+            if ($adminDetail) {
+                $adminEmail = $adminDetail['email'];
+                $adminSubject = 'Task Updated Notification';
+                $adminContent = 'A task has been updated:<br>'
+                              . 'Title: ' . $filterAll['title'] . '<br>'
+                              . 'Description: ' . $filterAll['description'] . '<br>'
+                              . 'Status: ' . $filterAll['status'] . '<br>'
+                              . 'Assigned to: ' . $userDetail['fullname'] . ' (' . $userDetail['email'] . ')';
+                
+                // Gọi hàm sendMail với tệp đính kèm
+                sendMail($adminEmail, $adminSubject, $adminContent, $attachments);
+            }
+
+            setFlashData('msg', 'Edit task successfully and email sent to user and admin!');
             setFlashData('msg_type', 'success');
         } else {
             setFlashData('msg', 'The system is experiencing an error, please try again later!');

@@ -2,8 +2,9 @@
 if (!defined('_CODE')) {
     die('Access denied...');
 }
+
 $data = [
-    'pageTitle' => 'List',
+    'pageTitle' => 'Task Management',
 ];
 
 layouts('header', $data);
@@ -14,18 +15,18 @@ if (!$loginStatus['isLoggedIn']) {
     exit;
 }
 
-if (!$loginStatus['isAdmin']) {   
-    setFlashData('msg', 'Access denied. Only admins can access this page.');
-    setFlashData('msg_type', 'danger');
-    redirect('?module=home&action=dashboard');
-}
+$userId = $loginStatus['userId'];
+$isAdmin = $loginStatus['isAdmin'];
 
-$listTasks = getAll("SELECT tasks.*, users.fullname AS username FROM tasks LEFT JOIN users ON tasks.userid = users.id ");
+if ($isAdmin) {
+    $listTasks = getAll("SELECT tasks.*, users.fullname FROM tasks LEFT JOIN users ON tasks.userid = users.id");
+} else {
+    $listTasks = getAll("SELECT tasks.*, users.fullname FROM tasks LEFT JOIN users ON tasks.userid = users.id WHERE tasks.userid = '$userId'");
+}
 
 $msg = getFlashData('msg');
 $msg_type = getFlashData('msg_type');
-// $errors = getFlashData('errors');
-// $old = getFlashData('old_data');
+
 ?>
 
 <div class="container">
@@ -45,8 +46,9 @@ $msg_type = getFlashData('msg_type');
                 <th>Order</th>
                 <th>Title</th>
                 <th>Description</th>
-                <th>Assigned to</th>
+                <th>Assigned To</th>
                 <th>Status</th>
+                <th>Created At</th>
                 <th width="5%">Edit</th>
                 <th width="5%">Remove</th>
             </tr>
@@ -69,30 +71,24 @@ $msg_type = getFlashData('msg_type');
                             <?php echo $task['description']; ?>
                         </td>
                         <td>
-                            <?php echo $task['username']; ?>
+                            <?php echo $task['fullname']; ?>
                         </td>
                         <td>
-                            <?php 
-                            if ($task['status'] == "Done") {
-                                echo '<button class="btn btn-success btn-sn"> Done </button>';
-                            } elseif ($task['status'] == "In Progress") {
-                                echo '<button class="btn btn-warning btn-sn"> In Progress </button>';
-                            } else {
-                                echo '<button class="btn btn-danger btn-sn">' . $task['status'] . '</button>';
-                            }; 
-                            ?>
+                            <?php echo $task['status'] == 'Done' ? '<button class="btn btn-success btn-sn"> Done </button>' : '<button class="btn btn-warning btn-sn">'. $task['status'] .'</button>'; ?>
+                        </td>
+                        <td>
+                            <?php echo $task['created_at']; ?>
                         </td>
                         <td><a href="<?php echo _WEB_HOST; ?>?module=task&action=edit&id=<?php echo $task['id']; ?>" class="btn btn-warning btn-sn"><i class="fa-solid fa-pen-to-square"></i></a></td>
-                        <td><a href="<?php echo _WEB_HOST; ?>?module=task&action=delete&id=<?php echo $task['id']; ?>" onclick="return confirm('Are you sure you want to delete this task?')"
-                                class="btn btn-danger btn-sn"><i class="fa-solid fa-trash"></i></a></td>
+                        <td><a href="<?php echo _WEB_HOST; ?>?module=task&action=delete&id=<?php echo $task['id']; ?>" onclick="return confirm('Are you sure you want to delete this task?')" class="btn btn-danger btn-sn"><i class="fa-solid fa-trash"></i></a></td>
                     </tr>
                     <?php
                 endforeach;
             else:
                 ?>
                 <tr>
-                    <td colspan="7">
-                        <div class="alert alert-danger text-center">Don't have any users</div>
+                    <td colspan="8">
+                        <div class="alert alert-danger text-center">No tasks found</div>
                     </td>
                 </tr>
                 <?php
